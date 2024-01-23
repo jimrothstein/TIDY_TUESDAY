@@ -1,0 +1,33 @@
+
+---
+title: skeleton.qmd
+date: last-modified
+# Quarto requires title, if want date to appear
+# ~/.config/kickstart/skeleton/skeleton.qmd
+---
+#   TAGS:   
+# https://juliasilge.com/blog/polling-places/
+
+```{r}
+library(tidyverse)
+# big !
+
+if (F) {
+polling_places <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-01-16/polling_places.csv')
+saveRDS(polling_places,   file="polling_places.RDS")
+}
+polling_places  <- readRDS(file = "polling_places.RDS")
+nrow(polling_places) # [1] 461445
+
+head(polling_places)
+
+polling_places |> 
+  count(election_date)                 # each date, # polling places
+
+unique(polling_places$election_date)
+
+polling_places |> select(election_date) |> unique()
+```
+
+
+vim:linebreak:nospell:nowrap:cul tw=78 fo=tqlnrc foldcolumn=1 cc=+1
