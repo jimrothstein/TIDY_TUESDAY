@@ -2,11 +2,11 @@
 ---
 title: skeleton.qmd
 date: last-modified
-# Quarto requires title, if want date to appear
-# ~/.config/kickstart/skeleton/skeleton.qmd
 ---
 #   TAGS:   
+
 # https://juliasilge.com/blog/polling-places/
+# https://www.youtube.com/watch?v=NZ2oXAj-bHE&list=PLbcglKxZP5PN07Vw-0ukcDJCxFGY2Crgc&index=11
 
 ```{r}
 library(tidyverse)
@@ -17,6 +17,12 @@ polling_places <- read_csv('https://raw.githubusercontent.com/rfordatascience/ti
 saveRDS(polling_places,   file="polling_places.RDS")
 }
 polling_places  <- readRDS(file = "polling_places.RDS")
+names(polling_places)
+#  [1] "election_date"     "state"             "county_name"      
+#  [4] "jurisdiction"      "jurisdiction_type" "precinct_id"      
+#  [7] "precinct_name"     "polling_place_id"  "location_type"    
+# [10] "name"              "address"           "notes"            
+# [13] "source"            "source_date"       "source_notes"     
 nrow(polling_places) # [1] 461445
 
 head(polling_places)
@@ -24,9 +30,41 @@ head(polling_places)
 polling_places |> 
   count(election_date)                 # each date, # polling places
 
-unique(polling_places$election_date)
+```
 
-polling_places |> select(election_date) |> unique()
+##  By State, changes in # polling places by year
+```{r}
+polling_places |> 
+  dplyr::filter(month(election_date) == 11) |> 
+  count(state, election_date) |>
+  mutate(state = fct_reorder(state, n)) |> 
+  ggplot(aes(election_date, n, color = state)) + 
+  geom_line(alpha = 0.6, linewidth = 1.2, show.legend = FALSE) + 
+  scale_color_viridis_d() +
+  scale_y_log10() +
+  labs(x = NULL, y = "Number of polling places per state")
+```
+
+## save 
+```{r}
+by_state <-
+  polling_places |> 
+  dplyr::filter(month(election_date) == 11) |> 
+  count(state, election_date)
+
+by_state
+
+total_change <-
+  by_state |> 
+  group_by(state) |> 
+  mutate(change = n - dplyr::lag(n)) |>     # compare to prior value of n|
+  dplyr::filter(n() > 1)  |>    # omit states with only 1 election_date
+  summarize(change = sum(change, na.rm = TRUE) / first(n)) 
+
+total_change
+
+
+summary(total_change$change)
 ```
 
 
