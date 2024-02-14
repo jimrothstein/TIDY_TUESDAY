@@ -3,7 +3,7 @@
 title: skeleton.qmd
 date: last-modified
 ---
-#   TAGS:   
+#   TAGS:   TidyTuesday, juliasilge, inner_join, tidyverse, 8j
 
 # https://juliasilge.com/blog/polling-places/
 # https://www.youtube.com/watch?v=NZ2oXAj-bHE&list=PLbcglKxZP5PN07Vw-0ukcDJCxFGY2Crgc&index=11
@@ -65,7 +65,29 @@ total_change
 
 
 summary(total_change$change)
+#    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#  -0.834  -0.070  -0.007  -0.045   0.024   0.594 
 ```
+```{r}
+
+us_states <- as_tibble(ggplot2::map_data("state"))
+limits <- max(abs(total_change$change)) * c(-1, 1)
+str(us_states)  # region="alabama" etc
+str(total_change)  # state = "AK"  etc
+```
+```{r}
+us_states |> 
+  inner_join(tibble(state = state.abb, region = str_to_lower(state.name))) |> 
+  left_join(total_change) |> 
+  ggplot(aes(x = long, y = lat, group = group, fill = change)) +
+  geom_polygon(color = "black", linewidth = 0.1) +
+  coord_map() +
+  scale_fill_distiller(palette = "RdYlBu", direction = 1, na.value = "gray95",
+                       limits = limits, label = scales::label_percent()) +
+  labs(fill = "Total change")
+```
+
+
 
 
 vim:linebreak:nospell:nowrap:cul tw=78 fo=tqlnrc foldcolumn=1 cc=+1
